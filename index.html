@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gruesome Wizard's Chess</title>
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <div class="app">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Blood. Bone. Strategy.</p>
+          <h1>Gruesome Wizard's Chess</h1>
+          <p class="subtitle">
+            Command a cursed board where every capture erupts in gore and magic.
+          </p>
+        </div>
+        <div class="hud">
+          <div><span>Turn</span><strong id="turnLabel">White</strong></div>
+          <div><span>Status</span><strong id="statusLabel">Choose a piece</strong></div>
+          <div><span>Last kill</span><strong id="killLabel">None yet</strong></div>
+          <button id="restartBtn">Resurrect the board</button>
+        </div>
+      </header>
+
+      <main class="game-layout">
+        <section class="board-panel">
+          <div id="board" class="board" aria-label="Wizard chess board"></div>
+        </section>
+        <aside class="lore-panel">
+          <h2>Necromancer's Commentary</h2>
+          <ul id="log"></ul>
+        </aside>
+      </main>
+    </div>
+  </body>
+</html>
