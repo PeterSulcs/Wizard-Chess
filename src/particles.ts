@@ -10,6 +10,8 @@ type Particle = {
   size: number;
   color: string;
   gravity: number;
+  shape?: 'circle' | 'streak' | 'splat';
+  rotation?: number;
 };
 
 let canvas: HTMLCanvasElement | null = null;
@@ -47,9 +49,34 @@ function tick(): void {
     const alpha = p.life / p.maxLife;
     pctx.globalAlpha = alpha;
     pctx.fillStyle = p.color;
-    pctx.beginPath();
-    pctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
-    pctx.fill();
+
+    if (p.shape === 'streak') {
+      // Elongated blood streak
+      pctx.save();
+      pctx.translate(p.x, p.y);
+      pctx.rotate(p.rotation ?? Math.atan2(p.vy, p.vx));
+      const len = p.size * 2.5 * alpha;
+      pctx.fillRect(-len / 2, -p.size * alpha / 2, len, p.size * alpha);
+      pctx.restore();
+    } else if (p.shape === 'splat') {
+      // Irregular blood splat
+      pctx.save();
+      pctx.translate(p.x, p.y);
+      pctx.rotate(p.rotation ?? 0);
+      const s = p.size * alpha;
+      pctx.beginPath();
+      pctx.ellipse(0, 0, s * 1.3, s * 0.7, 0, 0, Math.PI * 2);
+      pctx.fill();
+      // extra blob
+      pctx.beginPath();
+      pctx.arc(s * 0.8, s * 0.3, s * 0.5, 0, Math.PI * 2);
+      pctx.fill();
+      pctx.restore();
+    } else {
+      pctx.beginPath();
+      pctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
+      pctx.fill();
+    }
   }
 
   pctx.globalAlpha = 1;
@@ -73,27 +100,86 @@ function squareCenter(el: HTMLElement): { x: number; y: number } {
   return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
 }
 
-// Blood burst for captures
-export function burstBlood(squareEl: HTMLElement, count = 24): void {
+// Screen shake effect
+function screenShake(intensity = 4, duration = 200): void {
+  const board = document.getElementById('board');
+  if (!board) return;
+  const start = performance.now();
+  const shake = () => {
+    const elapsed = performance.now() - start;
+    if (elapsed > duration) {
+      board.style.transform = '';
+      return;
+    }
+    const decay = 1 - elapsed / duration;
+    const dx = (Math.random() - 0.5) * 2 * intensity * decay;
+    const dy = (Math.random() - 0.5) * 2 * intensity * decay;
+    board.style.transform = `translate(${dx}px, ${dy}px)`;
+    requestAnimationFrame(shake);
+  };
+  requestAnimationFrame(shake);
+}
+
+// Blood burst for captures — now much gorier
+export function burstBlood(squareEl: HTMLElement, count = 40): void {
   ensureCanvas();
   const { x, y } = squareCenter(squareEl);
-  const colors = ['#dc2626', '#991b1b', '#7f1d1d', '#450a0a', '#fca5a5'];
+  const colors = ['#dc2626', '#991b1b', '#7f1d1d', '#450a0a', '#fca5a5', '#b91c1c', '#ef4444'];
 
+  // Main blood burst
   for (let i = 0; i < count; i++) {
     const angle = Math.random() * Math.PI * 2;
-    const speed = 1.5 + Math.random() * 4;
+    const speed = 2 + Math.random() * 6;
+    const shape = Math.random() < 0.3 ? 'streak' : Math.random() < 0.4 ? 'splat' : 'circle';
     particles.push({
       x,
       y,
       vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed - 1,
-      life: 30 + Math.random() * 30,
-      maxLife: 60,
-      size: 2 + Math.random() * 5,
+      vy: Math.sin(angle) * speed - 2,
+      life: 35 + Math.random() * 35,
+      maxLife: 70,
+      size: 2 + Math.random() * 6,
       color: colors[Math.floor(Math.random() * colors.length)],
-      gravity: 0.12,
+      gravity: 0.14,
+      shape: shape as 'circle' | 'streak' | 'splat',
+      rotation: Math.random() * Math.PI * 2,
     });
   }
+
+  // Blood drips that fall down
+  for (let i = 0; i < 8; i++) {
+    particles.push({
+      x: x + (Math.random() - 0.5) * 20,
+      y,
+      vx: (Math.random() - 0.5) * 0.8,
+      vy: 1 + Math.random() * 2,
+      life: 50 + Math.random() * 40,
+      maxLife: 90,
+      size: 2 + Math.random() * 3,
+      color: '#7f1d1d',
+      gravity: 0.2,
+      shape: 'streak',
+      rotation: Math.PI / 2,
+    });
+  }
+
+  // Mist / spray
+  for (let i = 0; i < 12; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    particles.push({
+      x: x + (Math.random() - 0.5) * 10,
+      y: y + (Math.random() - 0.5) * 10,
+      vx: Math.cos(angle) * (0.5 + Math.random()),
+      vy: Math.sin(angle) * (0.5 + Math.random()) - 0.5,
+      life: 25 + Math.random() * 20,
+      maxLife: 45,
+      size: 8 + Math.random() * 12,
+      color: 'rgba(220, 38, 38, 0.3)',
+      gravity: -0.01,
+    });
+  }
+
+  screenShake(5, 180);
   startLoop();
 }
 
@@ -104,7 +190,7 @@ export function meteorExplosion(squareEl: HTMLElement): void {
   const colors = ['#f97316', '#dc2626', '#facc15', '#991b1b', '#fbbf24', '#fff'];
 
   // Central flash
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 12; i++) {
     particles.push({
       x,
       y,
@@ -112,16 +198,16 @@ export function meteorExplosion(squareEl: HTMLElement): void {
       vy: (Math.random() - 0.5) * 0.5,
       life: 15 + Math.random() * 10,
       maxLife: 25,
-      size: 10 + Math.random() * 15,
+      size: 12 + Math.random() * 20,
       color: '#fff',
       gravity: 0,
     });
   }
 
   // Outer burst
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 55; i++) {
     const angle = Math.random() * Math.PI * 2;
-    const speed = 2 + Math.random() * 7;
+    const speed = 2 + Math.random() * 9;
     particles.push({
       x,
       y,
@@ -129,14 +215,33 @@ export function meteorExplosion(squareEl: HTMLElement): void {
       vy: Math.sin(angle) * speed - 2,
       life: 40 + Math.random() * 40,
       maxLife: 80,
-      size: 3 + Math.random() * 6,
+      size: 3 + Math.random() * 7,
       color: colors[Math.floor(Math.random() * colors.length)],
       gravity: 0.1,
+      shape: Math.random() < 0.3 ? 'streak' : 'circle',
+      rotation: Math.random() * Math.PI * 2,
+    });
+  }
+
+  // Blood rain falling from explosion
+  for (let i = 0; i < 15; i++) {
+    particles.push({
+      x: x + (Math.random() - 0.5) * 60,
+      y: y - 10 - Math.random() * 20,
+      vx: (Math.random() - 0.5) * 1.5,
+      vy: 2 + Math.random() * 4,
+      life: 60 + Math.random() * 50,
+      maxLife: 110,
+      size: 1.5 + Math.random() * 3,
+      color: '#991b1b',
+      gravity: 0.15,
+      shape: 'streak',
+      rotation: Math.PI / 2 + (Math.random() - 0.5) * 0.3,
     });
   }
 
   // Embers that float up
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 20; i++) {
     particles.push({
       x: x + (Math.random() - 0.5) * 30,
       y: y + (Math.random() - 0.5) * 30,
@@ -150,6 +255,22 @@ export function meteorExplosion(squareEl: HTMLElement): void {
     });
   }
 
+  // Smoke
+  for (let i = 0; i < 8; i++) {
+    particles.push({
+      x: x + (Math.random() - 0.5) * 15,
+      y: y + (Math.random() - 0.5) * 15,
+      vx: (Math.random() - 0.5) * 0.8,
+      vy: -0.3 - Math.random() * 0.8,
+      life: 50 + Math.random() * 40,
+      maxLife: 90,
+      size: 15 + Math.random() * 20,
+      color: 'rgba(40, 10, 10, 0.4)',
+      gravity: -0.01,
+    });
+  }
+
+  screenShake(8, 300);
   startLoop();
 }
 
@@ -159,19 +280,21 @@ export function boneShards(squareEl: HTMLElement): void {
   const { x, y } = squareCenter(squareEl);
   const colors = ['#e8dcc8', '#d4c4a8', '#c9b896', '#f5f0e8'];
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 14; i++) {
     const angle = Math.random() * Math.PI * 2;
-    const speed = 2 + Math.random() * 3;
+    const speed = 2 + Math.random() * 4;
     particles.push({
       x,
       y,
       vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed - 2,
-      life: 30 + Math.random() * 25,
-      maxLife: 55,
-      size: 1.5 + Math.random() * 3,
+      vy: Math.sin(angle) * speed - 3,
+      life: 35 + Math.random() * 30,
+      maxLife: 65,
+      size: 1.5 + Math.random() * 3.5,
       color: colors[Math.floor(Math.random() * colors.length)],
-      gravity: 0.18,
+      gravity: 0.2,
+      shape: Math.random() < 0.5 ? 'streak' : 'circle',
+      rotation: Math.random() * Math.PI * 2,
     });
   }
   startLoop();

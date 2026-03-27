@@ -1059,6 +1059,14 @@ function goreLine(attacker: Piece, victim: Piece, to: Position): string {
     `${pieceText(attacker)} pulps ${pieceText(victim)} into gobbets and ruin on ${notation(to)}.`,
     `${pieceText(victim)} bursts under ${pieceText(attacker)}, painting ${notation(to)} with hot arterial filth.`,
     `${pieceText(attacker)} leaves only a steaming stain and loose bones where ${pieceText(victim)} stood on ${notation(to)}.`,
+    `${pieceText(attacker)} tears ${pieceText(victim)} in half. Organs slop across ${notation(to)} like a butcher's floor.`,
+    `${pieceText(victim)}'s skull caves inward. ${pieceText(attacker)} wipes viscera from its face at ${notation(to)}.`,
+    `${pieceText(attacker)} disembowels ${pieceText(victim)} with surgical fury. ${notation(to)} runs red.`,
+    `A wet crunch. ${pieceText(attacker)} stands over the twitching remains of ${pieceText(victim)} on ${notation(to)}.`,
+    `${pieceText(victim)} erupts in a geyser of crimson. ${pieceText(attacker)} bathes in the warmth at ${notation(to)}.`,
+    `${pieceText(attacker)} rips ${pieceText(victim)}'s spine free and plants it like a flag on ${notation(to)}.`,
+    `${pieceText(victim)} is unmade. Teeth scatter across ${notation(to)} like dice. ${pieceText(attacker)} grins.`,
+    `${pieceText(attacker)} crushes ${pieceText(victim)} underfoot. The wet pop echoes across the board.`,
   ];
   return lines[Math.floor(Math.random() * lines.length)];
 }
