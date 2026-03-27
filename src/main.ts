@@ -207,10 +207,8 @@ function render(): void {
   // Render rank labels (numbers) on left side
   for (let row = 0; row < 8; row++) {
     const label = document.createElement('span');
-    label.className = 'rank-label';
+    label.className = `rank-label gr-${row + 1} gc-1`;
     label.textContent = String(8 - row);
-    label.style.gridRow = String(row + 1);
-    label.style.gridColumn = '1';
     boardEl.appendChild(label);
   }
 
@@ -218,12 +216,10 @@ function render(): void {
     row.forEach((piece, colIndex) => {
       const position = { row: rowIndex, col: colIndex };
       const square = document.createElement('button');
-      square.className = `square ${(rowIndex + colIndex) % 2 === 0 ? 'light' : 'dark'}`;
+      square.className = `square ${(rowIndex + colIndex) % 2 === 0 ? 'light' : 'dark'} gr-${rowIndex + 1} gc-${colIndex + 2}`;
       square.type = 'button';
       square.dataset.row = String(rowIndex);
       square.dataset.col = String(colIndex);
-      square.style.gridRow = String(rowIndex + 1);
-      square.style.gridColumn = String(colIndex + 2); // +2 for rank labels
 
       if (bloodStains.has(squareKey(position))) {
         square.classList.add('bloody');
@@ -305,10 +301,8 @@ function render(): void {
   // Render file labels (letters) at bottom
   for (let col = 0; col < 8; col++) {
     const label = document.createElement('span');
-    label.className = 'file-label';
+    label.className = `file-label gr-9 gc-${col + 2}`;
     label.textContent = String.fromCharCode(97 + col);
-    label.style.gridRow = '9';
-    label.style.gridColumn = String(col + 2);
     boardEl.appendChild(label);
   }
 
