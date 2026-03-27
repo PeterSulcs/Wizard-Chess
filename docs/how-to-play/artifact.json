@@ -1,0 +1,30 @@
+{
+  "title": "Gruesome Wizard's Chess",
+  "appUrl": "http://127.0.0.1:4173",
+  "generatedAt": "2026-03-27T22:27:18.855Z",
+  "captures": {
+    "startFull": "./images/01-start-full.png",
+    "boardOnly": "./images/02-board.png",
+    "selectedMove": "./images/03-select-piece-and-moves.png",
+    "spellNoTarget": "./images/04-long-press-no-target.png",
+    "spellReady": "./images/05-blood-meteor-targets.png",
+    "afterSpell": "./images/06-after-blood-meteor.png",
+    "midGame": "./images/07-midgame-ui.png",
+    "mobileShot": "./images/08-mobile-layout.png"
+  },
+  "hud": {
+    "turn": "White",
+    "status": "Tap to move or long-press a piece for blood meteor",
+    "whiteSpell": "Meteor ready",
+    "blackSpell": "Meteor ready"
+  },
+  "commentary": [
+    "black knight glides to f4.",
+    "white bishop glides to c4.",
+    "white queen's skull caves inward. black knight wipes viscera from its face at h5.",
+    "white queen glides to h5.",
+    "black knight glides to f6.",
+    "white pawn glides to e4.",
+    "The dead rise. A fresh massacre begins."
+  ]
+}
