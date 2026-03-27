@@ -310,29 +310,57 @@ h1 {
   animation: gore-burst 780ms ease;
 }
 
+.square.blood-splatter {
+  animation: splatter-hit 600ms ease-out;
+}
+
 .square.bloody::before {
   content: "";
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 40% 30% at 28% 32%, rgba(153, 27, 27, 0.95), transparent),
-    radial-gradient(ellipse 35% 45% at 70% 60%, rgba(127, 29, 29, 0.9), transparent),
-    radial-gradient(ellipse 25% 35% at 48% 78%, rgba(69, 10, 10, 0.85), transparent),
-    radial-gradient(circle at 15% 65%, rgba(185, 28, 28, 0.6), transparent 22%),
-    radial-gradient(circle at 82% 25%, rgba(127, 29, 29, 0.7), transparent 18%);
+    radial-gradient(ellipse 55% 40% at 28% 32%, rgba(153, 27, 27, 0.95), transparent),
+    radial-gradient(ellipse 45% 55% at 70% 60%, rgba(127, 29, 29, 0.92), transparent),
+    radial-gradient(ellipse 35% 40% at 48% 78%, rgba(69, 10, 10, 0.88), transparent),
+    radial-gradient(circle at 15% 65%, rgba(185, 28, 28, 0.7), transparent 25%),
+    radial-gradient(circle at 82% 25%, rgba(153, 27, 27, 0.75), transparent 22%),
+    radial-gradient(circle at 50% 50%, rgba(127, 29, 29, 0.4), transparent 45%);
   opacity: 0.95;
+  animation: blood-throb 3s ease-in-out infinite;
 }
 
 .square.bloody::after {
   content: "";
   position: absolute;
-  bottom: -2px;
-  left: 20%;
-  width: 15%;
-  height: 30%;
-  background: linear-gradient(to bottom, rgba(127, 29, 29, 0.8), rgba(69, 10, 10, 0.3), transparent);
+  bottom: -3px;
+  left: 18%;
+  width: 18%;
+  height: 35%;
+  background: linear-gradient(to bottom, rgba(153, 27, 27, 0.85), rgba(69, 10, 10, 0.4), transparent);
   border-radius: 0 0 50% 50%;
+  opacity: 0.8;
+}
+
+/* Adjacent blood splatter from nearby kills */
+.square.blood-adjacent::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 85% 80%, rgba(127, 29, 29, 0.6), transparent 30%),
+    radial-gradient(circle at 10% 15%, rgba(153, 27, 27, 0.4), transparent 20%);
   opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Blood vignette overlay — intensifies with carnage */
+.blood-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  transition: opacity 1s ease;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(127, 29, 29, var(--vignette-intensity, 0)) 100%);
 }
 
 /* Captured pieces tray */
@@ -412,21 +440,42 @@ h1 {
     box-shadow: inset 0 0 0 0 rgba(220, 38, 38, 0.95);
     filter: saturate(1) brightness(1);
   }
-  15% {
-    box-shadow: inset 0 0 0 999px rgba(255, 255, 255, 0.9);
-    filter: saturate(0) brightness(3);
+  12% {
+    box-shadow: inset 0 0 0 999px rgba(255, 255, 255, 0.95);
+    filter: saturate(0) brightness(4);
   }
-  30% {
-    box-shadow: inset 0 0 0 999px rgba(220, 38, 38, 0.9);
-    filter: saturate(3) brightness(1.2);
+  25% {
+    box-shadow: inset 0 0 0 999px rgba(220, 38, 38, 0.95);
+    filter: saturate(3.5) brightness(1.3);
+  }
+  40% {
+    box-shadow: inset 0 0 0 999px rgba(153, 27, 27, 0.8);
+    filter: saturate(2.5) brightness(1);
   }
   60% {
     box-shadow: inset 0 0 0 999px rgba(127, 29, 29, 0.5);
-    filter: saturate(2) brightness(0.9);
+    filter: saturate(2) brightness(0.85);
   }
   100% {
     box-shadow: inset 0 0 0 0 rgba(220, 38, 38, 0);
     filter: saturate(1) brightness(1);
+  }
+}
+
+@keyframes blood-throb {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 1; }
+}
+
+@keyframes splatter-hit {
+  0% {
+    box-shadow: inset 0 0 0 0 rgba(153, 27, 27, 0.6);
+  }
+  30% {
+    box-shadow: inset 0 0 0 999px rgba(153, 27, 27, 0.4);
+  }
+  100% {
+    box-shadow: inset 0 0 0 0 rgba(153, 27, 27, 0);
   }
 }
 

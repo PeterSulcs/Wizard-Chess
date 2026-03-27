@@ -120,8 +120,8 @@ function screenShake(intensity = 4, duration = 200): void {
   requestAnimationFrame(shake);
 }
 
-// Blood burst for captures — now much gorier
-export function burstBlood(squareEl: HTMLElement, count = 40): void {
+// Blood burst for captures — maximum carnage
+export function burstBlood(squareEl: HTMLElement, count = 55): void {
   ensureCanvas();
   const { x, y } = squareCenter(squareEl);
   const colors = ['#dc2626', '#991b1b', '#7f1d1d', '#450a0a', '#fca5a5', '#b91c1c', '#ef4444'];
@@ -147,7 +147,7 @@ export function burstBlood(squareEl: HTMLElement, count = 40): void {
   }
 
   // Blood drips that fall down
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 14; i++) {
     particles.push({
       x: x + (Math.random() - 0.5) * 20,
       y,
@@ -164,7 +164,7 @@ export function burstBlood(squareEl: HTMLElement, count = 40): void {
   }
 
   // Mist / spray
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 18; i++) {
     const angle = Math.random() * Math.PI * 2;
     particles.push({
       x: x + (Math.random() - 0.5) * 10,
@@ -179,7 +179,25 @@ export function burstBlood(squareEl: HTMLElement, count = 40): void {
     });
   }
 
-  screenShake(5, 180);
+  // Blood pool that expands at the base
+  for (let i = 0; i < 6; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    particles.push({
+      x: x + Math.cos(angle) * (2 + Math.random() * 8),
+      y: y + 5 + Math.random() * 5,
+      vx: Math.cos(angle) * 0.3,
+      vy: 0.1 + Math.random() * 0.2,
+      life: 70 + Math.random() * 50,
+      maxLife: 120,
+      size: 10 + Math.random() * 15,
+      color: 'rgba(69, 10, 10, 0.6)',
+      gravity: 0,
+      shape: 'splat',
+      rotation: Math.random() * Math.PI * 2,
+    });
+  }
+
+  screenShake(6, 200);
   startLoop();
 }
 

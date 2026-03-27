@@ -179,6 +179,9 @@ function resetGame(): void {
   logLines = ['The dead rise. A fresh massacre begins.'];
   killLabel.textContent = 'None yet';
   removeOverlay();
+  // Reset blood vignette
+  const vignette = document.getElementById('bloodVignette');
+  if (vignette) vignette.style.opacity = '0';
   playRestart();
   render();
 }
@@ -493,6 +496,8 @@ function castSpell(color: Color, origin: Position, targetPosition: Position, squ
   squareEl.classList.add('gore');
   playSpell();
   meteorExplosion(squareEl);
+  splatterAdjacentSquares(targetPosition);
+  updateBloodVignette();
   killLabel.textContent = `${pieceText(caster)} incinerated ${pieceText(victim)}`;
   logLines.push(`${pieceText(caster)} calls down a blood meteor, turning ${pieceText(victim)} into a red paste at ${notation(targetPosition)}.`);
   finishTurn();
@@ -573,6 +578,8 @@ function makeMove(from: Position, to: Position, squareEl: HTMLButtonElement): vo
     playCapture();
     burstBlood(squareEl);
     boneShards(squareEl);
+    splatterAdjacentSquares(to);
+    updateBloodVignette();
     logLines.push(goreLine(piece, capturedPiece, to));
     killLabel.textContent = `${pieceText(piece)} butchered ${pieceText(capturedPiece)}`;
   } else if (piece.type === 'king' && Math.abs(to.col - from.col) === 2) {
@@ -1247,6 +1254,42 @@ function onDragEnd(e: PointerEvent): void {
 
 document.addEventListener('pointermove', onDragMove);
 document.addEventListener('pointerup', onDragEnd);
+
+// Splatter blood onto adjacent squares for visceral effect
+function splatterAdjacentSquares(position: Position): void {
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      if (dr === 0 && dc === 0) continue;
+      const adj = { row: position.row + dr, col: position.col + dc };
+      if (!inBounds(adj)) continue;
+      // Random chance — not every adjacent square gets hit
+      if (Math.random() > 0.5) continue;
+      const adjEl = squareAt(adj);
+      if (!adjEl) continue;
+      adjEl.classList.add('blood-adjacent', 'blood-splatter');
+      burstBlood(adjEl, 6); // small burst on adjacent
+      adjEl.addEventListener('animationend', () => {
+        adjEl.classList.remove('blood-splatter');
+      }, { once: true });
+    }
+  }
+}
+
+// Blood vignette that intensifies as carnage increases
+function updateBloodVignette(): void {
+  let vignette = document.getElementById('bloodVignette');
+  if (!vignette) {
+    vignette = document.createElement('div');
+    vignette.id = 'bloodVignette';
+    vignette.className = 'blood-vignette';
+    document.body.appendChild(vignette);
+  }
+  const totalKills = capturedPieces.white.length + capturedPieces.black.length;
+  // Scale from 0 to 0.5 as kills go from 0 to 16
+  const intensity = Math.min(0.5, totalKills * 0.035);
+  vignette.style.setProperty('--vignette-intensity', String(intensity));
+  vignette.style.opacity = '1';
+}
 
 function capitalize(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
