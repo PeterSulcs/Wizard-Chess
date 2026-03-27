@@ -270,16 +270,17 @@ function render(): void {
           }
           glyph.addEventListener('animationend', () => {
             arrivalAnimation = null;
-            render();
+            // Don't re-render — the animation fill-mode 'forwards' holds the final state
+            glyph.classList.remove('piece-sliding', 'piece-slam');
           }, { once: true });
         }
         glyph.innerHTML = pieceSvg(piece.type, piece.color);
 
-        // Drag support for white pieces
-        if (piece.color === 'white' && !gameOver && !aiThinking && !interactionLocked && turn === 'white') {
+        // Drag support for white pieces (desktop only — touch uses tap-to-move)
+        if (piece.color === 'white' && !gameOver && !aiThinking && !interactionLocked && turn === 'white' && !isTouchDevice()) {
           glyph.style.touchAction = 'none';
+          glyph.style.pointerEvents = 'auto';
           glyph.addEventListener('pointerdown', (e) => {
-            // Don't start drag on right-click
             if (e.button !== 0) return;
             e.stopPropagation();
             onDragStart(e, position, glyph);
@@ -1114,6 +1115,10 @@ function pieceText(piece: Piece): string {
 
 function notation(position: Position): string {
   return `${String.fromCharCode(97 + position.col)}${8 - position.row}`;
+}
+
+function isTouchDevice(): boolean {
+  return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 }
 
 // --- Drag and Drop ---

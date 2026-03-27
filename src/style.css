@@ -212,8 +212,9 @@ h1 {
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
-  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
   overflow: hidden;
+  contain: layout style paint;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .square.light {
@@ -226,9 +227,12 @@ h1 {
   color: #ffe4e6;
 }
 
-.square:hover {
-  transform: scale(1.02);
-  z-index: 1;
+@media (hover: hover) {
+  .square:hover {
+    transform: scale(1.02);
+    z-index: 1;
+    transition: transform 120ms ease;
+  }
 }
 
 .piece {
@@ -715,9 +719,15 @@ h1 {
     border-radius: 8px;
   }
 
-  /* Disable hover effects on touch */
-  .square:hover {
-    transform: none;
+  /* Kill expensive GPU effects on mobile */
+  .top-bar,
+  .board-panel,
+  .lore-panel {
+    backdrop-filter: none;
+  }
+
+  .board-frame {
+    box-shadow: none;
   }
 
   /* Game over overlay adjustments */
