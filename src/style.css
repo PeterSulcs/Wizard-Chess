@@ -602,6 +602,12 @@ h1 {
 
   .top-bar-hud strong {
     font-size: 0.75rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.3;
+    min-height: calc(0.75rem * 1.3 * 2); /* reserve 2 lines so layout stays stable */
   }
 
   .hud-spells {

@@ -282,8 +282,7 @@ function render(): void {
           glyph.style.pointerEvents = 'auto';
           glyph.addEventListener('pointerdown', (e) => {
             if (e.button !== 0) return;
-            e.stopPropagation();
-            onDragStart(e, position, glyph);
+            onDragPending(e, position, glyph);
           });
         }
 
@@ -1121,12 +1120,25 @@ function isTouchDevice(): boolean {
   return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 }
 
-// --- Drag and Drop ---
+// --- Drag and Drop (with distance threshold so clicks still work) ---
 
-function onDragStart(e: PointerEvent, position: Position, glyphEl: HTMLElement): void {
+const DRAG_THRESHOLD = 5; // px before drag activates
+let pendingDrag: { startX: number; startY: number; position: Position; el: HTMLElement; pointerId: number } | null = null;
+
+function onDragPending(e: PointerEvent, position: Position, glyphEl: HTMLElement): void {
   if (gameOver || aiThinking || interactionLocked || turn !== 'white' || spellMode.active) return;
   const piece = board[position.row][position.col];
   if (!piece || piece.color !== 'white') return;
+
+  pendingDrag = { startX: e.clientX, startY: e.clientY, position, el: glyphEl, pointerId: e.pointerId };
+  glyphEl.setPointerCapture(e.pointerId);
+}
+
+function promoteToDrag(pd: typeof pendingDrag, e: PointerEvent): void {
+  if (!pd) return;
+  const { position, el: glyphEl } = pd;
+  const piece = board[position.row][position.col];
+  if (!piece) return;
 
   // Select this piece and compute legal moves
   selected = position;
@@ -1149,15 +1161,25 @@ function onDragStart(e: PointerEvent, position: Position, glyphEl: HTMLElement):
   glyphEl.style.pointerEvents = 'none';
   glyphEl.style.left = `${e.clientX - rect.width / 2}px`;
   glyphEl.style.top = `${e.clientY - rect.height / 2}px`;
-  glyphEl.setPointerCapture(e.pointerId);
 
   playSelect();
   render();
   // Re-attach the dragged element since render clears the board
   document.body.appendChild(glyphEl);
+  pendingDrag = null;
 }
 
 function onDragMove(e: PointerEvent): void {
+  // Check if pending drag should promote to actual drag
+  if (pendingDrag) {
+    const dx = e.clientX - pendingDrag.startX;
+    const dy = e.clientY - pendingDrag.startY;
+    if (Math.sqrt(dx * dx + dy * dy) >= DRAG_THRESHOLD) {
+      promoteToDrag(pendingDrag, e);
+    }
+    return;
+  }
+
   if (!dragState) return;
   const { el } = dragState;
   const w = parseFloat(el.style.width);
@@ -1175,6 +1197,12 @@ function onDragMove(e: PointerEvent): void {
 }
 
 function onDragEnd(e: PointerEvent): void {
+  // If drag never activated, let the click event handle it
+  if (pendingDrag) {
+    pendingDrag = null;
+    return;
+  }
+
   if (!dragState) return;
   const { from, el } = dragState;
 
